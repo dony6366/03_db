@@ -17,8 +17,7 @@
 
 ---
 
-## 문자열형
-
+## 문자열형\
 | 자료형        | 설명                              | 예시               |
 |----------------|-----------------------------------|--------------------|
 | `CHAR(n)`      | 고정 길이 문자열 (n자)            | `'Y'`, `'YES'`     |
@@ -26,7 +25,7 @@
 | `TEXT`         | 긴 텍스트 (최대 65,535자)         | 긴 설명글          |
 | `ENUM`         | 지정된 값 중 하나만 저장 가능     | `'male'`, `'female'` |
 
-#char 예시 : 주빈등록번호, 전화번호 등 고정된 길이를 가지고 있는 데이터
+# char 예시 : 주민등록번호, 전화번호
 
 ---
 
@@ -39,24 +38,28 @@
 | `DATETIME`   | 날짜 + 시간                    | `'2025-04-18 14:30:00'` |
 | `TIMESTAMP`  | UNIX 타임스탬프 기반 날짜/시간 | `'2025-04-18 14:30:00'` |
 | `YEAR`       | 연도 (4자리)                   | `'2025'`                |
-
 */
 
-select now(); #현재시간
-select current_date, current_time
+select now(); # 현재시간 조회
+select current_date, current_time;
+select current_timestamp;
+
 
 # 한 줄 주석
--- 한 줄 주석
-# /* (텍스트) */ 범위 주석
-
--- ==== table ====
+# -- 한 줄 주석
 /*
- - 데이터(값)을 보관하는 주체
- - 항상 row(행), column(열) 로 이뤄져 있음
- - database(schema) 하위에만 본재 가능
+ 범위 주석
  */
 
-#지정된 테이블 전체 조회
+
+-- === TABLE ===
+/*
+ - 데이터(값)을 보관하는 주체
+ - 항상 row(행), column(열)로 이루어져 있음
+ - database(schema) 하위에만 존재 가능
+ */
+
+# 지정된 테이블 전체 조회
 select * from tbl_category;
 select * from tbl_menu;
 select * from tbl_order;
@@ -64,5 +67,5 @@ select * from tbl_order_menu;
 select * from tbl_payment;
 select * from tbl_payment_order;
 
-# 테이블 구조 조회(컬럼명, 자료형, 제약조건, 추가설정 등.)
+# 테이블 구조 조회(컬럼명, 자료형, 제약조건, 추가설정)
 desc tbl_menu;

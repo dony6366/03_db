@@ -1,5 +1,5 @@
 ### SET OPERATORS(집합 연산)
-#- 두개 이상의 select 결과(ResultSet)
+# - 두 개 이상의 select 결과(ResultSet)를 결합
 
 # UNION : 합집합
 SELECT
@@ -11,9 +11,9 @@ SELECT
 FROM
     tbl_menu
 WHERE
-    category_code = 10
+    category_code = 10   # 2,3,4,11,12,17
 UNION
-SELECT
+SELECT                   # 1,2,3,4,10,12,13,17,21
     menu_code,
     menu_name,
     menu_price,
@@ -23,7 +23,6 @@ FROM
     tbl_menu
 WHERE
     menu_price < 9000;
-
 
 
 # INTERSECT : 교집합
@@ -36,9 +35,9 @@ SELECT
 FROM
     tbl_menu
 WHERE
-    category_code = 10
+    category_code = 10   # 2,3,4,11,12,17
 INTERSECT
-SELECT
+SELECT                   # 1,2,3,4,10,12,13,17,21
     menu_code,
     menu_name,
     menu_price,
@@ -48,8 +47,6 @@ FROM
     tbl_menu
 WHERE
     menu_price < 9000;
-
-
 
 
 # UNION ALL : 합집합 + 교집합
@@ -62,9 +59,9 @@ SELECT
 FROM
     tbl_menu
 WHERE
-    category_code = 10
+    category_code = 10   # 2,3,4,11,12,17
 UNION ALL
-SELECT
+SELECT                   # 1,2,3,4,10,12,13,17,21
     menu_code,
     menu_name,
     menu_price,
@@ -76,8 +73,7 @@ WHERE
     menu_price < 9000;
 
 
-
-# MINUS : 차집합 (왼쪽 집합에서 오른쪽 집합을 뺌)
+# MINUS : 차집합
 SELECT
     a.menu_code,
     a.menu_name,
@@ -86,7 +82,7 @@ SELECT
     a.orderable_status
 FROM
     tbl_menu a
-LEFT JOIN (SELECT
+LEFT JOIN (SELECT # 1,2,3,4,10,12,13,17,21
 		menu_code,
 		menu_name,
 		menu_price,
@@ -95,11 +91,8 @@ LEFT JOIN (SELECT
 	FROM
 		tbl_menu
 	WHERE
-		menu_price < 9000) b
- on
-    (a.menu_code = b.menu_code)
+		menu_price < 9000) b on (a.menu_code = b.menu_code)
 WHERE
-    a.category_code = 10 AND
     b.menu_code IS NULL;
 
 
@@ -122,59 +115,55 @@ WHERE
 -- 서브쿼리는 연산자의 오른쪽에 위치 해야 함
 -- 서브쿼리 내에서 order by 문법은 지원 안됨
 
-#1. 메뉴테이블에서 "민트미역국"의 카테고리 코드 조회
-select tbl_menu.category_code
-from tbl_menu
-where
-    menu_name = '민트미역국' #4
 
-#2. 메뉴 테이블에서 카테고리 코드가 4인 메뉴 조회
+# 1. 메뉴 테이블에서 '민트미역국'의 카테고리 코드 조회
+select category_code
+from tbl_menu
+where menu_name = '민트미역국'; # 4
+
+# 2. 메뉴 테이블에서 카테고리 코드가 4인 메뉴 조회
 select *
 from tbl_menu
-where
-    category_code = 4; #4
+where category_code = 4;
 
-# 3. 메뉴테이블에서 민트미역국과 같은 카테고리의 메뉴를 조회
+# 3. 메뉴 테이블에서
+# '민트미역국'과 같은 카테고리의 메뉴를 조회
 select *
 from tbl_menu
-where
-    category_code = (
-select tbl_menu.category_code #서브쿼리
-from tbl_menu
-where
-    menu_name = '민트미역국');
+where category_code = (
+    select category_code
+    from tbl_menu
+    where menu_name = '민트미역국'
+    );
 
+# 메뉴 테이블에서
+# '민트미역국'보다 비싼 메뉴를
+# 가격 내림 차순으로 조회
 
-# 메뉴테이블에서 민트미역국 보다 비싼 메뉴를 가격 내림차순으로 조회
 select *
 from tbl_menu
-where
-    menu_price >(
+where menu_price > (
     select menu_price
     from tbl_menu
-    where
-    menu_name = '민트미역국')
+    where menu_name = '민트미역국')
 order by menu_price desc;
 
 
 # 다중행 단일열 서브쿼리
-# -> 서브쿼리가 여러개의 값을 반환
+# -> 서브쿼리가 여러 개의 값을 반환
 
-#카테고리 테이블에서 ref_category_code 값이 1인 카테고리 코드를 찾아
-#메뉴테이블에서 같은 카테고리의 메뉴를 모두 조회
+# 카테고리 테이블에서
+# ref_category_code 값이 1인 카테고리 코드를 찾아
+# 메뉴 테이블에서
+# 같은 카테고리의 메뉴를 모두 조회
 
-select category_code
-from tbl_category
-where ref_category_code =1); # 4,5,6,7
-
-#서브쿼리 이용
-select tbl_menu.menu_name
+select *
 from tbl_menu
-where
-    category_code in (
-select category_code
-from tbl_category
-where ref_category_code =1);
+where category_code in ( # 4,5,6,7
+    select category_code
+    from tbl_category
+    where ref_category_code = 1
+    );
 
 
 # 상관서브쿼리 (상호연관)
@@ -190,108 +179,97 @@ where ref_category_code =1);
 -- 그렇지 않고 서브쿼리가 독단적으로 사용이 되면 일반 서브쿼리
 
 # 카테고리별 가장 비싼 메뉴 조회
-#1. 카테고리 코드가 4인 (5,6,7,8,...10번) 카테고리 메뉴중 가장 비싼메뉴
-select max(tbl_menu.menu_price)
+
+# 1. 4(5,6,7,...,10)번 카테고리 메뉴 중 가장 비싼 메뉴 가격 조회
+select max(menu_price)
 from tbl_menu
-where
-    category_code = 4;
+where category_code = 4;
 
-#2 카테고리별 가장 비싼 메뉴 조회
+
+# 2. 카테고리별 가장 비싼 메뉴 조회
 select *
 from tbl_menu main
-where
-    menu_price = (
-    select
-        max(menu_price)
-    from
-        tbl_menu sub
-    where
-        sub.category_code = main.category_code
-        );
+where menu_price = (
+    select max(menu_price)
+    from tbl_menu sub
+    where sub.category_code = main.category_code
+    );
 
 
-# 카테고리 별 평균 금액보다 비싼 메뉴
+# 카테고리별 평균 금액보다 비싼 메뉴만 조회
 select *
 from tbl_menu main
-where
-    menu_price > (
-    select
-        avg(menu_price)
-    from
-        tbl_menu sub
-    where
-        sub.category_code = main.category_code
-        );
+where menu_price > (
+    select avg(menu_price)
+    from tbl_menu sub
+    where sub.category_code = main.category_code
+    );
 
 
-### 스칼라 서브쿼리
-# -select 절에서 사용하는 결과 값이 1개인 서브쿼리
+# 스칼라 서브쿼리
+# - select 절에서 사용하는 결과 값이 1개인 서브쿼리
+
 select
     menu_name,
     category_code,
     (select category_name
-    from tbl_category sub
-    where sub.category_code = main.category_code) category_name
+     from tbl_category sub
+     where sub.category_code = main.category_code) category_name
 from
     tbl_menu main;
 
+
 ### 인라인 뷰(INLINE VIEW)
-# -from 절에서 작성된 서브쿼리
-# - 서브쿼리의 결과 집합(resultset)을 테이블처럼 사용
-select *
-from(
+# - FROM절에 작성된 서브쿼리
+# - 서브쿼리의 결과 집합(ResultSet)을 테이블 처럼 사용
+
 select
-    m.category_code,
-    m.menu_name,
-    c.category_name
-from
-    tbl_menu m
-join
-    tbl_category c
-on
-    m.category_code = c.category_code
-) menu_view
-where category_name = '한식';
+    *
+from (
+    select
+        m.menu_code, m.menu_name, c.category_name
+    from  tbl_menu m
+    join  tbl_category c
+        on(m.category_code = c.category_code)
+     ) menu_view
+where
+    category_name = '한식';
 
 
-
-#인라인뷰를 이용하여 기존 테이블의 컬럼명을 별칭으로 변경 가능
-# (== 원본 테이블 컬럼명 은닉)
-select *
-from(
+# 인라인뷰를 이용하여 기존 테이블의 컬럼명을 별칭으로 변경 가능
+# (원본 테이블 컬럼명 은닉)
 select
-    m.category_code as 메뉴코드,
-    m.menu_name as 메뉴명,
-    c.category_name as 카테고리명
-from
-    tbl_menu m
-join
-    tbl_category c
-on
-    m.category_code = c.category_code
-) menu_view
-where 카테고리명 = '한식';
+    *
+from (
+    select
+        m.menu_code as 메뉴코드,
+        m.menu_name as 메뉴명,
+        c.category_name as 카테고리명
+    from  tbl_menu m
+    join  tbl_category c
+        on(m.category_code = c.category_code)
+     ) menu_view
+where
+    카테고리명 = '한식';
 
 
-
-### CTE (Common Table Expression)
-# - 인라인뷰로 사용할 서브쿼리를 테이블 변수에 저장하고, 사용할 수 있게하는 문법
+### CTE(Common Table Expression)
+# - 인라인뷰로 사용할 서브쿼리를
+#   테이블 변수에 저장하고, 사용할 수 있게하는 문법
 /* [작성법]
    with 변수명 as (서브쿼리)
    select *
-    from 변수명
+   from 변수명
  */
-with menu_view as(
-select
-    m.category_code as 메뉴코드,
-    m.menu_name as 메뉴명,
-    c.category_name as 카테고리명
-from
-    tbl_menu m
-join
-    tbl_category c
-on
-    m.category_code = c.category_code)
+with menu_view as (
+    select
+        m.menu_code as 메뉴코드,
+        m.menu_name as 메뉴명,
+        c.category_name as 카테고리명
+    from  tbl_menu m
+    join  tbl_category c
+        on(m.category_code = c.category_code)
+)
 select *
 from menu_view
 where 카테고리명 = '한식';

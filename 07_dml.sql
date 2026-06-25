@@ -26,39 +26,47 @@
 # - fk컬럼 참조하는 컬럼 이외의 값을 들어갈 수 없다.
 # - check컬럼 제시된 도메인외의 값을 들어갈 수 없다.
 
-
-
-
 # 문법 1. 테이블에 작성된 컬럼 순서대로 모든 값 작성
 insert into tbl_menu
-values(null, # auto increment 가 숫자 대입
+values(
+       null,
        '바나나해장국',
        9500,
        4,
-       'y');
+       'Y');
 
-select * from tbl_menu;
+select * from tbl_menu; # 확인
 
-desc tbl_menu; # tbl_menu에 대한 정보 조회
-# 모든 컬럼에 null 삽입이 불가하다
+desc tbl_menu; # tbl_menu 테이블 정보 조회
+# -> 모든 컬럼에 null 삽입 불가
+insert into tbl_menu
+values(
+       null, # -> auto increment가 숫자 대입
+       null,
+       9500,
+       4,
+       'Y');
+# [23000][1048] Column 'menu_name' cannot be null
+
+
 # 문법 2. 작성한 컬럼 값 제공
 
-               insert into
+# menu_code 제외 -> 자동으로 null -> auto increment 적용
+insert into
     tbl_menu(menu_price,
              orderable_status,
              menu_name,
-             category_code) #menu_code 제외 -> 자동으로 null ->auto increment
-    values(
-           6500,
-           'y',
-        '카카오죽',
-           '6'
-          )
+             category_code)
+values(
+       6500,
+       'Y',
+       '카카오 죽',
+       '6'
+      );
+
+select * from tbl_menu;
 
 
-    select * from tbl_menu;
-
-#문법3 : 대량 데이터 추가
 # 문법3: 대량 데이터 추가
 insert into
     tbl_menu
@@ -67,41 +75,42 @@ values
     (null, '멸치맛 아이스크림', 1700, 12, 'Y'),
     (null, '소시지맛 커피', 2300, 8, 'Y');
 
- select * from tbl_menu;
+
+select * from tbl_menu;
 
 
-# ====================================================================================
+# =============================================
 # update(수정)
 # - 테이블 기존 행의 컬럼 값을 수정하는 구문
 # - 바꾸고 싶은 컬럼 값이 존재하는 행을 잘 찾는 것이 중요
-# (where)
+#   (where)
 /*
-    [작성법]
     update 테이블명
     set
-        컬럼명 = 값,
-        컬럼명 = 값,
+        컬럼명 = 수정값,
+        컬럼명 = 수정값,
         ...
     where
-        행 선택 조건
+        행 선택 조건;
 */
 
 
 select * from tbl_menu;
 
-# 19번의 가격 천원 인상
+# 19번 가격 1000원 인상
 update tbl_menu
 set
-    menu_price = menu_price - 1000 # 업데이트 명령에서만 '='이 대입의 의미를 가진다
+    menu_price = menu_price + 1000 # 대입 연산
 where
     menu_code = 19;
 
 select * from tbl_menu;
 
-#한식의 가격 500원 인상
+
+# '한식'의 가격을 모두 500원 인상
 update tbl_menu
 set
-    menu_price = menu_price + 500 # 업데이트 명령에서만 '='이 대입의 의미를 가진다
+    menu_price = menu_price + 500
 where
     category_code = (
         select category_code
@@ -111,58 +120,59 @@ where
 
 select * from tbl_menu;
 
-#================================================================================
-# DELETE (삭제)
-# 지정된 행을 삭제 (where)
+
+# =========================================
+# delete (삭제)
+# - 지정된 행을 삭제 (where)
 /*
-    [작성법]
     delete
     from 테이블명
     where 조건;
 */
 
 select * from tbl_menu;
+# 27번 메뉴 삭제
 delete
 from tbl_menu
 where menu_code = 27;
 
 select * from tbl_menu;
 
- # 메뉴코드가 21보다 큰 메뉴 모두 삭제
-select * from tbl_menu;
+# 메뉴 코드가 21 보다 큰 메뉴 모두 삭제
 delete
 from tbl_menu
 where menu_code > 21;
 
 select * from tbl_menu;
 
-#======================================================================================
-#  replace
-# - insert + update ( upsert구문)
-# - 새로운 데이터를 테이블에 삽입할 떄
-#  pk(식별자) 컬럼 값이 증복되는 것이 없으면 insert
-# pk(식별자) 컬럼 값이 증복되는 것이 있으면 update
+
+# ===========================================
+# replace
+# - insert + update  (upsert 구문)
+# - 새로운 데이터를 테이블에 삽입할 때
+#    pk(식별자) 컬럼 값이 중복되는 것이 없으면 insert
+#    pk(식별자) 컬럼 값이 중복되면 update
 /*
-    replace INTO <테이블명>
+    REPLACE INTO <테이블명>
     VALUES (입력데이터1, 입력데이터2, ... );
-*/
+ */
 
-
-replace INTO tbl_menu
-VALUES (100,
-        '참기름 커피',
-        3000,
-        8,
-        'y' );
+replace into tbl_menu
+values(100,
+       '참기름커피',
+       3000,
+       8,
+       'Y'); # insert
 
 select * from tbl_menu;
 
-replace INTO tbl_menu
-VALUES (100,
-        '소주맛 커피',
-        3000,
-        8,
-        'y' ); #update 모습
-                            # (실제) delete 후 insert 수행
+
+replace into tbl_menu
+values(100,
+       '소주맛 커피',
+       5000,
+       8,
+       'Y'); # update 모습
+                          # (실제)delete 후 insert 수행
 
 select * from tbl_menu;
